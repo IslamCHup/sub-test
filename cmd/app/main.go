@@ -1,32 +1,73 @@
 package main
 
 import (
+	"context"
+	"net/http"
 	"os"
-	"test-junior-go/internal/config"
-	postgres "test-junior-go/internal/db"
-	"test-junior-go/internal/logger"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/gin-gonic/gin"
+	"test-junior-go/internal/config"
+	"test-junior-go/internal/database"
+	"test-junior-go/internal/handler"
+	"test-junior-go/internal/logger"
+	"test-junior-go/internal/repository"
+	"test-junior-go/internal/service"
+
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	godotenv.Load()
+
+	_ = godotenv.Load()
+
 	cfg := config.Load()
 
-	logger := logger.InitLog(cfg.LogLevel)
+	log := logger.InitLog(cfg.LogLevel)
 
-	_, err := postgres.InitDB(cfg.DB, logger)
+	db, err := database.InitDB(cfg.DB, log)
 	if err != nil {
-		logger.Error("failed to initialize db", "error", err)
-		return
+		log.Error("failed to initialize db", "error", err)
+		os.Exit(1)
 	}
 
-	r := gin.Default()
+	repo := repository.NewSubscriptionRepository(db, log)
+	svc := service.NewSubscriptionService(repo, log)
+	hnd := handler.NewSubscriptionHandler(svc, log)
+	router := handler.NewRouter(hnd)
 
-	logger.Info("application started")
-
-	if err := r.Run(":" + os.Getenv("APP_PORT")); err != nil {
-		logger.Error("", "err", err)
+	port := os.Getenv("APP_PORT")
+	if port == "" {
+		port = "8080"
 	}
+
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: router,
+	}
+
+	go func() {
+		log.Info("server started", "port", port)
+
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error("failed to start server", "error", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	<-quit
+
+	log.Info("shutting down server")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Error("server forced to shutdown", "error", err)
+	}
+
+	log.Info("server exited")
 }
