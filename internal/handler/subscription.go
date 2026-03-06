@@ -32,6 +32,16 @@ func NewSubscriptionHandler(
 	}
 }
 
+// CreateSubscription godoc
+// @Summary Create subscription
+// @Description Create new subscription
+// @Tags subscriptions
+// @Accept json
+// @Produce json
+// @Param subscription body dto.CreateSubscriptionRequest true "Subscription data"
+// @Success 201 {object} model.Subscription
+// @Failure 400 {object} map[string]string
+// @Router /subscriptions [post]
 func (h *SubscriptionHandler) Create(c *gin.Context) {
 
 	var req dto.CreateSubscriptionRequest
@@ -104,6 +114,14 @@ func (h *SubscriptionHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, sub)
 }
 
+// GetSubscriptionByID godoc
+// @Summary Get subscription
+// @Tags subscriptions
+// @Produce json
+// @Param id path int true "Subscription ID"
+// @Success 200 {object} model.Subscription
+// @Failure 404 {object} map[string]string
+// @Router /subscriptions/{id} [get]
 func (h *SubscriptionHandler) GetByID(c *gin.Context) {
 
 	idParam := c.Param("id")
@@ -140,6 +158,16 @@ func (h *SubscriptionHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, sub)
 }
 
+// GetSubscriptions godoc
+// @Summary List subscriptions
+// @Tags subscriptions
+// @Produce json
+// @Param user_id query string false "User ID"
+// @Param service_name query string false "Service name"
+// @Param limit query int false "Limit"
+// @Param offset query int false "Offset"
+// @Success 200 {array} model.Subscription
+// @Router /subscriptions [get]
 func (h *SubscriptionHandler) GetAll(c *gin.Context) {
 
 	limit, _ := strconv.Atoi(c.Query("limit"))
@@ -162,6 +190,13 @@ func (h *SubscriptionHandler) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, subs)
 }
 
+// DeleteSubscription godoc
+// @Summary Delete subscription
+// @Tags subscriptions
+// @Param id path int true "Subscription ID"
+// @Success 204
+// @Failure 404 {object} map[string]string
+// @Router /subscriptions/{id} [delete]
 func (h *SubscriptionHandler) Delete(c *gin.Context) {
 
 	idParam := c.Param("id")
@@ -199,6 +234,17 @@ func (h *SubscriptionHandler) Delete(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+// GetTotalCost godoc
+// @Summary Calculate total subscription cost
+// @Tags subscriptions
+// @Produce json
+// @Param user_id query string true "User ID"
+// @Param service_name query string false "Service name"
+// @Param start query string true "Start period (MM-YYYY)"
+// @Param end query string true "End period (MM-YYYY)"
+// @Success 200 {object} map[string]int64
+// @Router /subscriptions/total [get]
 func (h *SubscriptionHandler) GetTotal(c *gin.Context) {
 
 	userID := c.Query("user_id")
