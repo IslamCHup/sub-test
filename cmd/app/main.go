@@ -1,3 +1,8 @@
+// @title Subscription Aggregator API
+// @version 1.0
+// @description REST API для управления онлайн подписками пользователей
+// @host localhost:8080
+// @BasePath /api
 package main
 
 import (
