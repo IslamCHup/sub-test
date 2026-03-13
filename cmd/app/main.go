@@ -40,7 +40,7 @@ func main() {
 	repo := repository.NewSubscriptionRepository(db, log)
 	svc := service.NewSubscriptionService(repo, log)
 	hnd := handler.NewSubscriptionHandler(svc, log)
-	router := handler.NewRouter(hnd)
+	router := handler.NewRouter(hnd, log)
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {

@@ -1,16 +1,20 @@
 package handler
 
 import (
+	"log/slog"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	_ "test-junior-go/docs"
+	"test-junior-go/internal/middleware"
 )
 
-func NewRouter(h *SubscriptionHandler) *gin.Engine {
+func NewRouter(h *SubscriptionHandler, logger *slog.Logger) *gin.Engine {
 
 	r := gin.New()
+	r.Use(middleware.LoggingMiddleware(logger))
 
 	r.Use(gin.Recovery())
 
