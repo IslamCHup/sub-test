@@ -25,6 +25,3 @@ EXPOSE 8080
 
 CMD ["./app"]
 
-migrate -path migrations \
--database "postgres://admin:12345@localhost:5433/subscriptions?sslmode=disable" \
-up
