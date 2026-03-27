@@ -136,13 +136,11 @@ func (s *subscriptionService) Delete(id uint) error {
 	err := s.repo.Delete(id)
 	if err != nil {
 
-		// Если репозиторий вернул "не найдено"
 		if errors.Is(err, suberrors.ErrSubscriptionNotFound) {
 			s.logger.Warn("subscription not found for delete", "id", id)
 			return err
 		}
 
-		// Любая другая ошибка — это ошибка сервера
 		s.logger.Error("failed to delete subscription",
 			"id", id,
 			"error", err,
